@@ -19,17 +19,18 @@ this_log.addHandler(logging.StreamHandler(sys.stdout))
 
 class TestScannerWithNode(TestCase, ScannerRunner):
     ETH_POOL_UNI_V2_CONTRACT_ADDRESS: Address = "0x85Cb0baB616Fe88a89A35080516a8928F38B518b"
+    FIRST_BLOCK = 11876000
+    NODE_URL = "http://1.1.1.1:1111"
     ABI = UNISWAP_V2_PAIR_ABI
 
-    def testWeb3Sync(self):
-        w3 = Web3(Web3.HTTPProvider("http://192.168.50.106:8545", request_kwargs={'timeout': 60}))
+    def test_web_3_sync(self):
+        w3 = Web3(Web3.HTTPProvider(self.NODE_URL, request_kwargs={'timeout': 60}))
         self.assertTrue(w3.isConnected())
 
         contract = w3.eth.contract(address=self.ETH_POOL_UNI_V2_CONTRACT_ADDRESS, abi=self.ABI)
 
         print(contract)
         event_filter = contract.events.Sync.createFilter(fromBlock=16478475-1000, toBlock=16478475)
-        # print(dir(event_filter))
         events = event_filter.get_all_entries()
         self.assertEqual(len(events), 2)
         self.assertEqual(set(events[0].keys()), {'address', 'args', 'blockHash', 'blockNumber', 'event', 'logIndex',
@@ -45,10 +46,9 @@ class TestScannerWithNode(TestCase, ScannerRunner):
 
     @unittest.skip("Using as a work space, runs in 12 hours for ETH-POOL pair")
     def test_scanner_runner(self):
-        first_block = 11876000
-        node_url = "http://192.168.50.106:8545"
+
         ScannerRunner.run_scanner(
-            "test-state.json", first_block, node_url, self.ABI, self.ETH_POOL_UNI_V2_CONTRACT_ADDRESS)
+            "test-state.json", self.FIRST_BLOCK, self.NODE_URL, self.ABI, self.ETH_POOL_UNI_V2_CONTRACT_ADDRESS)
 
     @unittest.skip("Using as a work space")
     def testReadJsonState(self):
@@ -60,5 +60,5 @@ class TestScannerWithNode(TestCase, ScannerRunner):
         self.assertTrue(isinstance(state_df, DataFrame))
 
         # store file as needed.
-        state_df.to_csv("state/0x85Cb0baB616Fe88a89A35080516a8928F38B518b_df.csv")
+        # state_df.to_csv("state/0x85Cb0baB616Fe88a89A35080516a8928F38B518b_df.csv")
         state_df.to_pickle("state/0x85Cb0baB616Fe88a89A35080516a8928F38B518b_df.pkl")
