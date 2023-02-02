@@ -1,3 +1,5 @@
 .idea
 .ipynb_checkpoints
-test/local_node/state
+data/
+test/local_node/state/
+
